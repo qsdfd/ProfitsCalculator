@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Profits</title>
+    <link rel="stylesheet" href="style/main.css" type="text/css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="js/jquery.couch.js"></script>
+  </head>
+  <body>
+  
+  <div id="info"></div>
+  
+  <div id="table_id">
+  	
+  </div>
+  
+  <button onclick="refresh()">Refresh</button>
+  
+  </body>
+  <script type="text/javascript" charset="utf-8">
+  
+  var OSBUDDY_API = "https://api.rsbuddy.com/grandExchange?a=guidePrice&i=";
+  
+function refresh(){
+	
+	var herbPots = [];
+	
+	$.ajax({
+        type : 'GET',
+        url : '../../' + "/herbpots",
+        async : false,
+        success : function(data){
+        	herbPots = data.items;
+        	makeHerbPotsTable(herbPots);
+        },
+        error : function(XMLHttpRequest, textStatus, errorThrown){
+        	$('#info').html("problem");
+        }
+    });
+}
+
+function makeHerbPotsTable(herbPots){
+	var herbPotsTable = "<table>";
+	
+	for(var i=0;i<herbPots.length;i++){
+		herbPotsTable += getHerbPotsRow(herbPots[i])
+	}
+	
+	herbPotsTable += "</table>";
+	
+	$('#table_id').html(herbPotsTable);
+}
+
+function getHerbPotsRow(herbPotItem){
+	
+	var row = "<tr><td>" + herbPotItem.pot_name + "</td>";
+	
+	console.log(OSBUDDY_API + herbPotItem.pot_id);
+	
+	var pot_url = "" + OSBUDDY_API + "" + herbPotItem.pot_id
+	$.ajax({
+        type : 'GET',
+        url : pot_url,
+        contentType : 'application/json',
+        async : false,
+        success : function(pot_data){
+        	
+        	row += "<td>" + pot_data.buying + "</td>";
+        	
+        	var herb_url = "" + OSBUDDY_API + "" + herbPotItem.herb_id;
+        	$.ajax({
+                type : 'GET',
+                url : herb_url,
+                contentType : 'application/json',
+                async : false,
+                success : function(herb_data){
+                	
+                	row += "<td>" + herb_data.selling + "</td>";
+                	
+                	row += "</tr>";
+                	
+                	return row;
+                	
+                },
+                error : function(XMLHttpRequest, textStatus, errorThrown){
+                	$('#info').html("Problem with OSBUDDY API");
+                	return null;
+                }
+            });
+        	
+        },
+        error : function(XMLHttpRequest, textStatus, errorThrown){
+        	$('#info').html("Problem with OSBUDDY API");
+        	return null;
+        }
+    });
+	
+	return null;
+}
+ 
+  </script>
+</html>
